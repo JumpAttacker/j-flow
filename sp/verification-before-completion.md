@@ -1,120 +1,52 @@
----
-name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
----
+# Проверка перед завершением
 
-# Verification Before Completion
+## Когда читать
 
-## Overview
+Контроллер и тестировщик читают документ перед итогом по приёмке. Исполнитель и
+ревьюер используют его перед заявлением, что исправление работает, проверки прошли
+или задача завершена. Маршрут и границы ролей задаёт [SKILL.md](../SKILL.md).
 
-**Core principle:** Evidence before claims, always.
+## Что является доказательством
 
-**Violating the letter of this rule is violating the spirit of this rule.**
+Для каждого утверждения подбери соответствующую проверку. Зелёный линтер не
+доказывает успешную сборку; сборка не доказывает устранение исходного симптома;
+успешные тесты не закрывают автоматически всю приёмку.
 
-## The Iron Law
+Запись проверки содержит:
 
-```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
-```
+- точную команду или шаги воспроизведения и их область;
+- проверенную версию кода: коммит, а при рабочих изменениях ещё идентифицируемый
+  снимок или diff, включая значимые неотслеживаемые файлы;
+- целевое приложение и существенное состояние окружения: конфигурацию, сборку,
+  данные и запущенный экземпляр, если от них зависит результат;
+- полный доступный вывод, код завершения и фактический итог, либо артефакт ручной
+  проверки: скриншот, ответ запроса или нужный фрагмент лога.
 
-If you haven't run the verification command in this message, you cannot claim it passes.
+Проверь, что команда завершилась и выбрала нужные тесты. Нулевой код с нулём найденных
+тестов не подтверждает их прохождение. Отчёт «всё хорошо» без проверяемого результата
+не является доказательством. Секреты и личные данные в артефактах скрывай.
 
-## The Gate Function
+## Когда повторять
 
-```
-BEFORE claiming any status or expressing satisfaction:
+Разрешено использовать результат другой роли или предыдущего сообщения, если
+проверенные код и существенное состояние окружения совпадают с текущими. Прочитай
+вывод, проверь принадлежность результата нужной версии и его область. Одного
+обещания исполнителя недостаточно; доступный diff также проверь сам.
 
-1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
-3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
-   - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
-5. ONLY THEN: Make the claim
+Повторяй затронутые проверки после изменения кода, тестов, конфигурации или runtime,
+которое влияет на результат. Повтор нужен и при конкретном сомнении: неясной версии,
+неполном выводе, неправильной цели, отсутствии нужных тестов или нестабильном сценарии.
+Новая роль или сообщение сами по себе не делают доказательство устаревшим. Когда
+подтверждения достаточны, не запускай весь набор ещё раз ради формальности.
 
-Skip any step = lying, not verifying
-```
+## Приёмка
 
-## Common Failures
+Проверь каждый согласованный пункт отдельно и поставь статус: подтверждён, не выполнен
+или не проверен. Приложи доказательство именно его результата. Проверки исполнителя
+могут подтвердить часть приёмки, но не заменяют её остальные сценарии и обязанности
+тестировщика. Для UI укажи проверенную страницу и состояние; контроллер открывает
+предусмотренные маршрутом визуальные доказательства.
 
-| Claim | Requires | Not Sufficient |
-|-------|----------|----------------|
-| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
-| Linter clean | Linter output: 0 errors | Partial check, extrapolation |
-| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
-| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
-| Regression test works | Red-green cycle verified | Test passes once |
-| Agent completed | VCS diff shows changes | Agent reports "success" |
-| Requirements met | Line-by-line checklist | Tests passing |
-
-## Red Flags - STOP
-
-- Using "should", "probably", "seems to"
-- Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
-- About to commit/push/PR without verification
-- Trusting agent success reports
-- Relying on partial verification
-- Thinking "just this once"
-- Tired and wanting work over
-- **ANY wording implying success without having run verification**
-
-## Rationalization Prevention
-
-| Excuse | Reality |
-|--------|---------|
-| "Should work now" | RUN the verification |
-| "I'm confident" | Confidence ≠ evidence |
-| "Just this once" | No exceptions |
-| "Linter passed" | Linter ≠ compiler |
-| "Agent said success" | Verify independently |
-| "I'm tired" | Exhaustion ≠ excuse |
-| "Partial check is enough" | Partial proves nothing |
-| "Different words so rule doesn't apply" | Spirit over letter |
-
-## Key Patterns
-
-**Tests:**
-```
-✅ [Run test command] [See: 34/34 pass] "All tests pass"
-❌ "Should pass now" / "Looks correct"
-```
-
-**Regression tests (TDD Red-Green):**
-```
-✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
-❌ "I've written a regression test" (without red-green verification)
-```
-
-**Build:**
-```
-✅ [Run build] [See: exit 0] "Build passes"
-❌ "Linter passed" (linter doesn't check compilation)
-```
-
-**Requirements:**
-```
-✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
-❌ "Tests pass, phase complete"
-```
-
-**Agent delegation:**
-```
-✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
-❌ Trust agent report
-```
-
-## When To Apply
-
-**ALWAYS before:**
-- ANY variation of success/completion claims
-- ANY expression of satisfaction
-- ANY positive statement about work state
-- Committing, PR creation, task completion
-- Moving to next task
-- Delegating to agents
-
-**Rule applies to:**
-- Exact phrases
-- Paraphrases and synonyms
-- Implications of success
-- ANY communication suggesting completion/correctness
+Если проверки недоступны или упали, сообщи фактический результат и причину. Не
+переписывай критерий приёмки под получившийся код. Итоговое утверждение ограничивай
+тем, что действительно подтверждено, включая непроверенные окружения и сценарии.

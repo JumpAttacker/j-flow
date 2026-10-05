@@ -1,115 +1,44 @@
-# Condition-Based Waiting
+# Ожидание асинхронного состояния
 
-## Overview
+## Когда читать
 
-Flaky tests often guess at timing with arbitrary delays. This creates race conditions where tests pass on fast machines but fail under load or in CI.
+Читай при нестабильном асинхронном тесте, случайном sleep или ожидании результата
+под нагрузкой. Ссылки ведут из [systematic-debugging.md](systematic-debugging.md)
+и [writing-good-tests.md](writing-good-tests.md). Команды и средства тестирования
+берутся из проекта; общий маршрут задаёт [SKILL.md](../SKILL.md).
 
-**Core principle:** Wait for the actual condition you care about, not a guess about how long it takes.
+## Средство ожидания
 
-## When to Use
+Сначала используй встроенное ожидание framework: повторяемое утверждение, ожидание
+события, ответа или состояния. Уточни, какие ошибки оно повторяет, как ограничивает
+время и какие данные сохраняет при отказе. Подписку на событие поставь до запуска
+действия, чтобы быстрый ответ не прошёл мимо неё.
 
-```dot
-digraph when_to_use {
-    "Test uses setTimeout/sleep?" [shape=diamond];
-    "Testing timing behavior?" [shape=diamond];
-    "Document WHY timeout needed" [shape=box];
-    "Use condition-based waiting" [shape=box];
+Условие описывает нужный результат: состояние готовности, ответ конкретного запроса,
+появление нужного файла или завершение операции. Проверяй актуальные данные на каждой
+попытке, а не снимок, сделанный перед ожиданием. Отдельно проверяй значение результата:
+само появление элемента не доказывает правильность его содержимого.
 
-    "Test uses setTimeout/sleep?" -> "Testing timing behavior?" [label="yes"];
-    "Testing timing behavior?" -> "Document WHY timeout needed" [label="yes"];
-    "Testing timing behavior?" -> "Use condition-based waiting" [label="no"];
-}
-```
+## Если встроенного ожидания нет
 
-**Use when:**
-- Tests have arbitrary delays (`setTimeout`, `sleep`, `time.sleep()`)
-- Tests are flaky (pass sometimes, fail under load)
-- Tests timeout when run in parallel
-- Waiting for async operations to complete
+Для короткой синхронной проверки состояния допустим ограниченный опрос:
 
-**Don't use when:**
-- Testing actual timing behavior (debounce, throttle intervals)
-- Always document WHY if using arbitrary timeout
+1. Задай конечный timeout, диагностическое описание условия и умеренный интервал.
+   Отсчитывай время монотонными часами.
+2. Проверяй текущее состояние до достижения условия или срока.
+3. При успехе верни результат. При превышении срока сообщи условие и безопасное
+   последнее наблюдение. Исключение проверяющей функции должно завершать ожидание
+   ошибкой; не оставляй Promise незавершённым в отложенном callback.
+4. Освободи таймеры и подписки при успехе, ошибке и отмене.
 
-## Core Pattern
+Асинхронный запрос внутри проверки должен иметь собственное ограничение времени
+или отмену: срок всего цикла не остановит зависший await. Не заменяй готовое
+средство framework новым универсальным помощником без необходимости.
 
-```typescript
-// ❌ BEFORE: Guessing at timing
-await new Promise(r => setTimeout(r, 50));
-const result = getResult();
-expect(result).toBeDefined();
+## Проверка времени как поведения
 
-// ✅ AFTER: Waiting for condition
-await waitFor(() => getResult() !== undefined);
-const result = getResult();
-expect(result).toBeDefined();
-```
-
-## Quick Patterns
-
-| Scenario | Pattern |
-|----------|---------|
-| Wait for event | `waitFor(() => events.find(e => e.type === 'DONE'))` |
-| Wait for state | `waitFor(() => machine.state === 'ready')` |
-| Wait for count | `waitFor(() => items.length >= 5)` |
-| Wait for file | `waitFor(() => fs.existsSync(path))` |
-| Complex condition | `waitFor(() => obj.ready && obj.value > 10)` |
-
-## Implementation
-
-Generic polling function:
-```typescript
-async function waitFor<T>(
-  condition: () => T | undefined | null | false,
-  description: string,
-  timeoutMs = 5000
-): Promise<T> {
-  const startTime = Date.now();
-
-  while (true) {
-    const result = condition();
-    if (result) return result;
-
-    if (Date.now() - startTime > timeoutMs) {
-      throw new Error(`Timeout waiting for ${description} after ${timeoutMs}ms`);
-    }
-
-    await new Promise(r => setTimeout(r, 10)); // Poll every 10ms
-  }
-}
-```
-
-See `condition-based-waiting-example.ts` in this directory for complete implementation with domain-specific helpers (`waitForEvent`, `waitForEventCount`, `waitForEventMatch`) from actual debugging session.
-
-## Common Mistakes
-
-**❌ Polling too fast:** `setTimeout(check, 1)` - wastes CPU
-**✅ Fix:** Poll every 10ms
-
-**❌ No timeout:** Loop forever if condition never met
-**✅ Fix:** Always include timeout with clear error
-
-**❌ Stale data:** Cache state before loop
-**✅ Fix:** Call getter inside loop for fresh data
-
-## When Arbitrary Timeout IS Correct
-
-```typescript
-// Tool ticks every 100ms - need 2 ticks to verify partial output
-await waitForEvent(manager, 'TOOL_STARTED'); // First: wait for condition
-await new Promise(r => setTimeout(r, 200));   // Then: wait for timed behavior
-// 200ms = 2 ticks at 100ms intervals - documented and justified
-```
-
-**Requirements:**
-1. First wait for triggering condition
-2. Based on known timing (not guessing)
-3. Comment explaining WHY
-
-## Real-World Impact
-
-From debugging session (2025-10-03):
-- Fixed 15 flaky tests across 3 files
-- Pass rate: 60% → 100%
-- Execution time: 40% faster
-- No more race conditions
+Для debounce, throttle и периодического действия время может быть частью контракта.
+Сначала дождись стартового события; затем проверь согласованный интервал. Используй
+управляемые часы, если framework позволяет. Реальная задержка допустима, когда
+проверяется именно реальное время; объясни её величину и допустимое отклонение.
+Увеличение задержки при неизвестной причине не исправляет гонку.

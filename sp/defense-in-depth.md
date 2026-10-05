@@ -1,122 +1,36 @@
-# Defense-in-Depth Validation
+# Защита независимых границ
 
-## Overview
+## Когда читать
 
-When you fix a bug caused by invalid data, adding validation at one place feels sufficient. But that single check can be bypassed by different code paths, refactoring, or mocks.
+Читай после поиска причины по [systematic-debugging.md](systematic-debugging.md),
+если ошибка затрагивает опасный побочный эффект и разные пути могут обойти первичную
+проверку. Правила проекта, бриф и [SKILL.md](../SKILL.md) определяют область изменений.
+Не добавляй проверки во все слои автоматически.
 
-**Core principle:** Validate at EVERY layer data passes through. Make the bug structurally impossible.
+## Выбор защиты
 
-## Why Multiple Layers
+Нарисуй для себя путь данных и назови независимые обязательства:
 
-Single validation: "We fixed the bug"
-Multiple layers: "We made the bug impossible"
+- внешняя граница отклоняет недопустимый вход;
+- операция проверяет свой инвариант, когда доступна также в обход внешней границы;
+- перед опасным побочным эффектом проверяется допустимый ресурс и контекст.
 
-Different layers catch different cases:
-- Entry validation catches most bugs
-- Business logic catches edge cases
-- Environment guards prevent context-specific dangers
-- Debug logging helps when other layers fail
+Добавляй проверку там, где есть реальный отдельный путь или новая гарантия.
+Повтор одной и той же проверки на каждом внутреннем вызове увеличивает поддержку
+без дополнительной защиты. Диагностика помогает установить причину, но не предотвращает
+операцию и не является ещё одним защитным барьером.
 
-## The Four Layers
+Для файловой операции сначала определи разрешённый каталог. Принадлежность пути
+проверяется по границам компонентов после разрешения абсолютного пути; строковый
+префикс не годится, потому что соседний каталог может иметь такое же начало имени.
+Если символические ссылки или junction входят в модель риска, учитывай фактическую
+цель и уже существующих родителей. Для изменяющейся файловой системы учитывай
+подмену между проверкой и операцией; одна проверка пути не устраняет эту гонку.
 
-### Layer 1: Entry Point Validation
-**Purpose:** Reject obviously invalid input at API boundary
+## Проверка результата
 
-```typescript
-function createProject(name: string, workingDirectory: string) {
-  if (!workingDirectory || workingDirectory.trim() === '') {
-    throw new Error('workingDirectory cannot be empty');
-  }
-  if (!existsSync(workingDirectory)) {
-    throw new Error(`workingDirectory does not exist: ${workingDirectory}`);
-  }
-  if (!statSync(workingDirectory).isDirectory()) {
-    throw new Error(`workingDirectory is not a directory: ${workingDirectory}`);
-  }
-  // ... proceed
-}
-```
-
-### Layer 2: Business Logic Validation
-**Purpose:** Ensure data makes sense for this operation
-
-```typescript
-function initializeWorkspace(projectDir: string, sessionId: string) {
-  if (!projectDir) {
-    throw new Error('projectDir required for workspace initialization');
-  }
-  // ... proceed
-}
-```
-
-### Layer 3: Environment Guards
-**Purpose:** Prevent dangerous operations in specific contexts
-
-```typescript
-async function gitInit(directory: string) {
-  // In tests, refuse git init outside temp directories
-  if (process.env.NODE_ENV === 'test') {
-    const normalized = normalize(resolve(directory));
-    const tmpDir = normalize(resolve(tmpdir()));
-
-    if (!normalized.startsWith(tmpDir)) {
-      throw new Error(
-        `Refusing git init outside temp dir during tests: ${directory}`
-      );
-    }
-  }
-  // ... proceed
-}
-```
-
-### Layer 4: Debug Instrumentation
-**Purpose:** Capture context for forensics
-
-```typescript
-async function gitInit(directory: string) {
-  const stack = new Error().stack;
-  logger.debug('About to git init', {
-    directory,
-    cwd: process.cwd(),
-    stack,
-  });
-  // ... proceed
-}
-```
-
-## Applying the Pattern
-
-When you find a bug:
-
-1. **Trace the data flow** - Where does bad value originate? Where used?
-2. **Map all checkpoints** - List every point data passes through
-3. **Add validation at each layer** - Entry, business, environment, debug
-4. **Test each layer** - Try to bypass layer 1, verify layer 2 catches it
-
-## Example from Session
-
-Bug: Empty `projectDir` caused `git init` in source code
-
-**Data flow:**
-1. Test setup → empty string
-2. `Project.create(name, '')`
-3. `WorkspaceManager.createWorkspace('')`
-4. `git init` runs in `process.cwd()`
-
-**Four layers added:**
-- Layer 1: `Project.create()` validates not empty/exists/writable
-- Layer 2: `WorkspaceManager` validates projectDir not empty
-- Layer 3: `WorktreeManager` refuses git init outside tmpdir in tests
-- Layer 4: Stack trace logging before git init
-
-**Result:** All 1847 tests passed, bug impossible to reproduce
-
-## Key Insight
-
-All four layers were necessary. During testing, each layer caught bugs the others missed:
-- Different code paths bypassed entry validation
-- Mocks bypassed business logic checks
-- Edge cases on different platforms needed environment guards
-- Debug logging identified structural misuse
-
-**Don't stop at one validation point.** Add checks at every layer.
+Для каждого добавленного барьера назови случай, который первичный барьер не закрывает.
+Проверь допустимый путь и отказ без опасного побочного эффекта. Не расширяй API
+специально для обхода барьера в тесте. Сохрани исправление источника ошибки;
+дополнительная защита его не заменяет. В отчёте перечисли конкретные гарантии
+и ограничения, не обещай невозможность всех будущих багов.

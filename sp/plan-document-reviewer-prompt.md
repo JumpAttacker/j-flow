@@ -1,62 +1,30 @@
-# Plan Document Reviewer Prompt Template
+# Ревью плана
 
-Use this template when dispatching a plan document reviewer subagent.
+Шаблон для одного `j-critic` после составления плана, до первой задачи.
+Политика процесса задана в [SKILL.md](../SKILL.md); ревью не создаёт нового гейта.
 
-**Purpose:** Verify the plan is complete, matches the spec, and has proper task decomposition.
+## Вход
 
-**Dispatch after:** The complete plan is written.
+`[PLAN_FILE]`, `[SPEC_FILE]`, `[PROJECT_RULES]`, `[CONSTRAINTS]`, `[REVIEW_RESULT_FILE]`.
+Если спецификация недоступна, обозначь границу проверки.
 
-В j-flow (маршрут architectural) план проверяется трижды: самопроверка
-автором ([writing-plans.md](writing-plans.md), Self-Review), ревью документа
-`j-critic` по этому шаблону, пре-флайт контроллером перед первой задачей
-([subagent-driven-development.md](subagent-driven-development.md), Setup).
-Среднюю проверку контроллер запускает сам и человека не спрашивает: гейт в
-маршруте один, и он позади. На вход — путь к плану и к спеке.
+## Проверка
 
-Один проход, один агент. Не разгонять веер ревьюеров по осям: модель,
-которую просят найти проблемы, найдёт их и в здоровом плане, а план — текст,
-где выдумать замечание дешевле всего. Ревьюер — `j-critic`; факт другой модели
-указывать лишь если она действительно назначена. Дополнительный агент для
-имитации другой модели не нужен.
+- Все требования и приёмка покрыты задачами, лишняя область не добавлена.
+- Задачи исполнимы: файлы, результат, зависимости, интерфейсы и проверки определены.
+- `Task N` и `Global Constraints` однозначны; общие файлы/runtime имеют порядок и владельца.
+- Команды и проверки соответствуют проектной методологии и полномочиям исполнителей.
+- Нет противоречий, незаполненных обязательных полей и предположений, без которых
+  исполнитель построит неверное решение.
 
-```
-Роль j-critic (вызов средствами оболочки по ../SKILL.md, раздел «Роли»; ниже поля брифа):
-  description: "Review plan document"
-  prompt: |
-    You are a plan document reviewer. Verify this plan is complete and ready for implementation.
+Воспроизводимые команды/примеры с существенным сомнением проверь в изолированной
+scratch-папке доступными средствами. Псевдокод не требует обязательного запуска.
+Checkout, индекс и HEAD не меняй. Других агентов не вызывай.
 
-    **Plan to review:** [PLAN_FILE_PATH]
-    **Spec for reference:** [SPEC_FILE_PATH]
+## Результат
 
-    ## What to Check
-
-    | Category | What to Look For |
-    |----------|------------------|
-    | Completeness | TODOs, placeholders, incomplete tasks, missing steps |
-    | Spec Alignment | Plan covers spec requirements, no major scope creep |
-    | Task Decomposition | Tasks have clear boundaries, steps are actionable |
-    | Buildability | Could an engineer follow this plan without getting stuck? |
-
-    ## Calibration
-
-    **Only flag issues that would cause real problems during implementation.**
-    An implementer building the wrong thing or getting stuck is an issue.
-    Minor wording, stylistic preferences, and "nice to have" suggestions are not.
-
-    Approve unless there are serious gaps — missing requirements from the spec,
-    contradictory steps, placeholder content, or tasks so vague they can't be acted on.
-
-    ## Output Format
-
-    ## Plan Review
-
-    **Status:** Approved | Issues Found
-
-    **Issues (if any):**
-    - [Task X, Step Y]: [specific issue] - [why it matters for implementation]
-
-    **Recommendations (advisory, do not block approval):**
-    - [suggestions for improvement]
-```
-
-**Reviewer returns:** Status, Issues (if any), Recommendations
+`Approved | Issues found` с коротким основанием. Для блокирующих находок укажи
+задачу/шаг, противоречие или недостающий вход и последствие для исполнения.
+Необязательные рекомендации и непроверенные пункты перечисли отдельно.
+Полный результат в `[REVIEW_RESULT_FILE]`, в ответе статус и путь.
+Стиль текста и личные предпочтения не блокируют план.
