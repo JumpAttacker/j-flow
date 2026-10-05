@@ -11,7 +11,7 @@ const TEXT = [
   "Обычные исследования, подбор покупок, сравнение оборудования и бытовая диагностика выполняются напрямую или через профильный скилл, без шагов j-flow. Нахождение в папке с проектами само по себе не основание для запуска. Обсуждение и редактирование правил j-flow не запускают процедуру.",
   "Роли `j-scout`, `j-designer`, `j-implementer`, `j-reviewer`, `j-critic`, `j-tester`, `j-keeper` зовёт контроллер сам по маршруту j-flow; человек их не выбирает.",
   "Для выбранной задачи разработки прочитай `.j-flow/state.md`, если он есть в проекте. Если j-flow применим, но `.j-flow/` нет, первая задача включает онбординг (`onboard.md` в скилле).",
-  `Приёмы TDD, отладки и проверки перед «готово» лежат в \`${skillRoot}/sp/\`: test-driven-development.md, systematic-debugging.md, verification-before-completion.md.`,
+  `Приёмы TDD, отладки и проверки перед «готово» лежат в \`${skillRoot}/references/\`: test-driven-development.md, systematic-debugging.md, verification-before-completion.md.`,
 ].join("\n");
 
 process.stdout.write(

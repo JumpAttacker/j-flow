@@ -57,25 +57,25 @@ description: >-
 
 | Когда | Кто читает | Ресурс |
 |---|---|---|
-| Начало прогона: определить масштаб и подготовить решение | Контроллер | [brainstorming](sp/brainstorming.md) |
+| Начало прогона: определить масштаб и подготовить решение | Контроллер | [brainstorming](references/brainstorming.md) |
 | В проекте отсутствует `.j-flow/` | Контроллер и назначенные роли | [onboard](onboard.md) |
-| Архитектурная задача после гейта | Контроллер | [writing-plans](sp/writing-plans.md) |
-| План готов, требуется проверить его выполнимость | `j-critic` | [plan review](sp/plan-document-reviewer-prompt.md) |
-| Исполнение плана, включая продолжение после потери контекста | Контроллер | [SDD](sp/subagent-driven-development.md) |
-| Выполнение отдельной задачи плана | `j-implementer` | [implementer](sp/implementer-prompt.md) |
-| Проверка выполненной задачи | `j-reviewer` | [task review](sp/task-reviewer-prompt.md) |
-| Проверка исправлений по замечаниям | `j-reviewer` | [re-review](sp/re-review-prompt.md) |
-| Итоговая проверка взаимодействия всех изменений | `j-critic` | [final review](sp/code-reviewer.md) |
-| Исправление бага или разбор неожиданного результата | Исполнитель | [systematic-debugging](sp/systematic-debugging.md) |
-| Добавление или изменение значимого поведения с TDD | Исполнитель | [test-driven-development](sp/test-driven-development.md) |
-| Написание или изменение тестов | Автор тестов | [writing-good-tests](sp/writing-good-tests.md) |
-| Причина теряется в цепочке вызовов или неверных данных | Исследователь | [root-cause-tracing](sp/root-cause-tracing.md) |
-| Независимые пути требуют защиты опасной границы | Исполнитель | [defense-in-depth](sp/defense-in-depth.md) |
-| Нестабильность связана с асинхронным состоянием | Автор проверки | [condition-based-waiting](sp/condition-based-waiting.md) |
-| Завершение задачи или утверждение о её готовности | Контроллер и `j-tester` | [verification](sp/verification-before-completion.md) |
+| Архитектурная задача после гейта | Контроллер | [writing-plans](references/writing-plans.md) |
+| План готов, требуется проверить его выполнимость | `j-critic` | [plan review](references/plan-document-reviewer-prompt.md) |
+| Исполнение плана, включая продолжение после потери контекста | Контроллер | [SDD](references/subagent-driven-development.md) |
+| Выполнение отдельной задачи плана | `j-implementer` | [implementer](references/implementer-prompt.md) |
+| Проверка выполненной задачи | `j-reviewer` | [task review](references/task-reviewer-prompt.md) |
+| Проверка исправлений по замечаниям | `j-reviewer` | [re-review](references/re-review-prompt.md) |
+| Итоговая проверка взаимодействия всех изменений | `j-critic` | [final review](references/code-reviewer.md) |
+| Исправление бага или разбор неожиданного результата | Исполнитель | [systematic-debugging](references/systematic-debugging.md) |
+| Добавление или изменение значимого поведения с TDD | Исполнитель | [test-driven-development](references/test-driven-development.md) |
+| Написание или изменение тестов | Автор тестов | [writing-good-tests](references/writing-good-tests.md) |
+| Причина теряется в цепочке вызовов или неверных данных | Исследователь | [root-cause-tracing](references/root-cause-tracing.md) |
+| Независимые пути требуют защиты опасной границы | Исполнитель | [defense-in-depth](references/defense-in-depth.md) |
+| Нестабильность связана с асинхронным состоянием | Автор проверки | [condition-based-waiting](references/condition-based-waiting.md) |
+| Завершение задачи или утверждение о её готовности | Контроллер и `j-tester` | [verification](references/verification-before-completion.md) |
 
 Поддерживающие документы уточняют технику, не переопределяют общие правила выше.
-При новом симптоме выбирай соответствующую строку, а не читай весь `sp/` заново.
+При новом симптоме выбирай соответствующую строку, а не читай весь `references/` заново.
 
 ## Роли и инструменты
 

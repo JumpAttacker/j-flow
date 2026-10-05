@@ -1,3 +1,14 @@
+# Уведомления о сторонних материалах
+
+## Superpowers
+
+Часть справок в `references/` и помощники `scripts/sdd-workspace`,
+`scripts/task-brief` и `scripts/review-package` адаптированы из
+[Superpowers](https://github.com/obra/superpowers) Jesse Vincent.
+В j-flow документы и помощники переработаны для собственного маршрута разработки.
+Ни плагин, ни runtime исходного проекта для работы j-flow не требуются.
+Ниже сохранён полный текст исходного уведомления MIT.
+
 MIT License
 
 Copyright (c) 2025 Jesse Vincent

@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const source = fileURLToPath(new URL('../sp/scripts/', import.meta.url));
+const source = fileURLToPath(new URL('./', import.meta.url));
 const bash = process.platform === 'win32' ? 'C:/Program Files/Git/bin/bash.exe' : 'bash';
 const slash = value => value.replaceAll('\\', '/');
 function diskPath(value) {

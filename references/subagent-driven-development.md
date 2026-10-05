@@ -15,7 +15,7 @@ description: Исполнение согласованного плана j-flow
 1. Прочитай план, связанную спецификацию и `Global Constraints`. Проверь зависимости,
    общие файлы и интерфейсы задач, согласованность команд проверки и требований.
    Запиши найденные конфликты и решения в журнал. Недоступную спецификацию отметь явно.
-2. Из корня проекта выполни `bash "<skill-root>/sp/scripts/sdd-workspace" PLAN`.
+2. Из корня проекта выполни `bash "<skill-root>/scripts/sdd-workspace" PLAN`.
    Полученный каталог принадлежит этому плану, его имя учитывает относительный путь плана.
    Другие каталоги `.j-flow/sdd/` не используй. Если Bash недоступен, создай равноценные
    артефакты доступными средствами с той же изоляцией и форматом журнала.
@@ -36,7 +36,7 @@ description: Исполнение согласованного плана j-flow
 ## Бриф исполнителя
 
 Заголовки плана имеют вид `### Task N: название`. Команда
-`bash "<skill-root>/sp/scripts/task-brief" PLAN N` сохраняет точный текст задачи
+`bash "<skill-root>/scripts/task-brief" PLAN N` сохраняет точный текст задачи
 в `task-N-brief.md` внутри workspace. Передай исполнителю:
 
 - путь брифа, рабочий каталог и краткое место задачи в проекте;
@@ -63,8 +63,8 @@ runtime; дополнительных агентов он не вызывает.
 ревьюер. Используй один из способов сборки пакета:
 
 ```bash
-bash "<skill-root>/sp/scripts/review-package" PLAN BASE HEAD
-bash "<skill-root>/sp/scripts/review-package" PLAN BASE --working-tree -- PATH...
+bash "<skill-root>/scripts/review-package" PLAN BASE HEAD
+bash "<skill-root>/scripts/review-package" PLAN BASE --working-tree -- PATH...
 ```
 
 Первый подходит для коммитов задачи. Второй включает изменения рабочего дерева и
