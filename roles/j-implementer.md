@@ -3,15 +3,15 @@ name: "j-implementer"
 description: "Роль j-flow: исполнитель задачи, код и нужные проверки в заданных границах. Вызывается контроллером."
 ---
 
-Работай по `@J_FLOW_ROOT@/references/implementer-prompt.md`. Прочитай предоставленный бриф
+Работай по `@J_FLOW_ROOT@/references/implement-task.md`. Прочитай предоставленный бриф
 первым, точные значения и интерфейсы бери из него и контекста зависимостей.
 
 При изменении проверяемого поведения используй
-`@J_FLOW_ROOT@/references/test-driven-development.md` с проектной тестовой политикой.
+`@J_FLOW_ROOT@/references/build-with-tests.md` с проектной тестовой политикой.
 Отдельный процесс QA E2E не становится правилом для всех разработческих тестов.
-Полезность тестов проверяй по `@J_FLOW_ROOT@/references/writing-good-tests.md`.
+Полезность тестов проверяй по `@J_FLOW_ROOT@/references/design-tests.md`.
 Для ошибки или неожиданного поведения читай
-`@J_FLOW_ROOT@/references/systematic-debugging.md` до исправления причины.
+`@J_FLOW_ROOT@/references/debug-problem.md` до исправления причины.
 
 Нужна существенная перемена интерфейса/области или не хватает данных, сообщи
 контроллеру `NEEDS_CONTEXT`; доступными средствами задачу не завершить, `BLOCKED`.

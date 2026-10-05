@@ -1,35 +1,35 @@
+# Based on JumpAttacker/j-flow, own document lifecycle edition, 2026-10-05.
 direction: down
-
-docs: Проект: .j-flow/ {
-  state: state.md\nцель · бэклог · отложенное · решения
-  features: features/*.md\nкак фича работает сейчас
+classes: {
+  step: {style.border-radius: 10; style.font-size: 21}
+  note: {shape: text; style.font-size: 18}
 }
 
-ctl: Контроллер = основная сессия {
-  s0: 0. старт\nчитает state + features\nподбор по стеку
-  s12: 1–2. классификация, вопросы
-  gate: 3. ГЕЙТ\nдизайн · схема · приёмка
-  s4: 4. исполнение (SDD)
-  s5: 5. приёмка
-  s6: 6. хвост
-  s0 -> s12 -> gate -> s4 -> s5 -> s6
+entry: "ВЫБОР ПРОЦЕССА\nМелкая правка / задача вне разработки → напрямую или профильный скилл\nПолный цикл разработки конкретного проекта → j-flow" {class: step}
+start: "0 • КОНТЕКСТ ПРОЕКТА\nAGENTS.md + описание/архитектура + state + индекс фич + checks\nНедостающее создаётся; новый и существующий проект → onboard.md" {class: step}
+prepare: "1–2 • КЛАССИФИКАЦИЯ И ВОПРОСЫ • prepare-solution.md\nКонтроллер выбирает spike / bounded / architectural\nШирокая разведка → j-scout, если делегирование доступно\nЕсть UI → j-designer: 2–3 изолированных варианта до одобрения" {class: step}
+gate: "3 • ОДОБРЕНИЕ РЕШЕНИЯ\nГраницы, способ проверки и выбранный вариант UI\nДля разработки: 3–6 проверяемых пунктов приёмки" {class: step}
+
+execute: "4 • ТРИ ВЕТКИ ИСПОЛНЕНИЯ" {
+  spike: "spike • исследование\nПроверить подход / выполнимость\nПолучить вывод и доказательства" {class: step}
+  bounded: "bounded • ограниченное изменение\nКонтроллер или j-implementer\nОтдельный полный план не нужен" {class: step}
+  architecture: "architectural • план и задачи\nПлан → j-critic проверяет выполнимость\nSDD: журнал, брифы и границы задач\nj-implementer → j-reviewer\nЗамечания → правки → повторное ревью\nПосле всех задач → итоговое ревью j-critic" {class: step}
 }
 
-scout: j-scout\nразведка, только чтение
-designer: j-designer\n2–3 варианта (скиллы + libs)\nвизуальное ревью скринов
-impl: j-implementer\nзадача + тесты
-rev: j-reviewer\nкод правильный?
-critic: j-critic\nплан + вся ветка
-tester: j-tester\nприёмка: тесты / Playwright /\nchrome-devtools --isolated --headless
-keeper: j-keeper\nпишет state + features
+acceptance: "5 • ПРИЁМКА • j-tester\nКритерии дословно + доказательства: PASS / FAIL / BLOCKED\nЕсть UI → j-designer проверяет снимки; контроллер открывает хотя бы один\nПроблемы возвращаются в исполнение; обязательные пункты должны быть закрыты" {class: step}
+keeper: "6 • СОСТОЯНИЕ И ПЕРЕДАЧА • j-keeper\nproject.md + state.md + функции + checks.md\nОткрытые пункты, решения и ограничения → отчёт пользователю" {class: step}
 
-docs -> ctl.s0: читает
-ctl.s12 -> scout
-ctl.gate -> designer: UI-задача
-ctl.s4 -> impl
-ctl.s4 -> rev
-ctl.s4 -> critic
-ctl.s5 -> tester
-tester -> designer: скрины (UI) { style.stroke-dash: 4 }
-ctl.s6 -> keeper
-keeper -> docs: пишет
+mode: "КАК ИСПОЛНЯЮТСЯ РОЛИ\nАктуальная регистрация → именованная роль\nИначе → тело roles/j-*.md общему агенту\nБез делегирования → контроллер выполняет этапы последовательно\nи явно указывает отсутствие независимого ревью" {class: note}
+policy: "НА ВСЕХ ЭТАПАХ\nПравила пользователя и проекта главнее SKILL.md; документы references/ уточняют технику.\nКонтроллер открывает документ по этапу или симптому; роль получает свой бриф и шаблон.\nОдобрение решения не расширяет права на коммит, push и публикацию." {class: note}
+
+entry -> start: выбран j-flow
+start -> prepare -> gate
+gate -> execute.spike: исследовать
+gate -> execute.bounded: изменить существующий поток
+gate -> execute.architecture: изменить архитектуру
+execute.spike -> keeper: рекомендация с доказательствами
+execute.bounded -> acceptance
+execute.architecture -> acceptance
+acceptance -> keeper: PASS / FAIL / BLOCKED
+keeper -> mode: {style.opacity: 0}
+mode -> policy: {style.opacity: 0}

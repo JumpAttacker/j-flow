@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { checkAnchors } from './check-anchors.mjs';
 
 function fixture(files) {
@@ -52,4 +54,39 @@ test('ни одного якоря — это провал, а не успех',
 test('README указателя не сканируется как заметка, но якоря в нём тоже проверяются', () => {
   const root = fixture({ 'a.js': '1\n', '.j-flow/features/README.md': '`a.js:1`' });
   assert.deepEqual(checkAnchors(root).ok, ['a.js:1']);
+});
+
+test('карта проекта проверяется даже без папки заметок фич', () => {
+  const root = fixture({
+    'entry.js': 'run\n',
+    '.j-flow/project.md': '`entry.js:1` `gone.js:1` `entry.js:2`',
+  });
+  const result = checkAnchors(root);
+  assert.deepEqual(result.ok, ['entry.js:1']);
+  assert.deepEqual(result.bad.map(item => item.anchor).sort(), ['entry.js:2', 'gone.js:1']);
+});
+
+test('пустая проверка нового проекта разрешается явно, а битые якоря не скрываются', () => {
+  const script = fileURLToPath(new URL('./check-anchors.mjs', import.meta.url));
+  const root = fixture({ '.j-flow/project.md': 'Реализация ещё отсутствует.' });
+  assert.equal(spawnSync(process.execPath, [script, root]).status, 1);
+  const empty = spawnSync(process.execPath, [script, root, '--allow-empty'], { encoding: 'utf8' });
+  assert.equal(empty.status, 0, empty.stderr);
+  assert.match(empty.stdout, /N\/A/);
+  fs.writeFileSync(path.join(root, '.j-flow/project.md'), '`missing.js:1`');
+  assert.equal(spawnSync(process.execPath, [script, root, '--allow-empty']).status, 1);
+});
+
+test('проверяется заданное проектом место описания, а отсутствующее и внешнее отклоняются', () => {
+  const root = fixture({
+    'entry.js': 'run\n',
+    '.j-flow/features/f.md': '`entry.js:1`',
+    'docs/architecture.md': '`entry.js:2`',
+  });
+  assert.deepEqual(checkAnchors(root, { projectDocument: 'docs/architecture.md' }).bad.map(item => item.anchor), ['entry.js:2']);
+  const script = fileURLToPath(new URL('./check-anchors.mjs', import.meta.url));
+  const result = spawnSync(process.execPath, [script, root, '--project-doc', 'docs/architecture.md']);
+  assert.equal(result.status, 1);
+  assert.throws(() => checkAnchors(root, { projectDocument: 'missing.md' }), /нет описания/);
+  assert.throws(() => checkAnchors(root, { projectDocument: '../outside.md' }), /вне проекта/);
 });

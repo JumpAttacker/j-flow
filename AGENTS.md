@@ -1,6 +1,7 @@
 # j-flow
 
 Состояние: [.j-flow/state.md](.j-flow/state.md). Фичи: [.j-flow/features/README.md](.j-flow/features/README.md).
+Описание проекта и архитектуры: [.j-flow/project.md](.j-flow/project.md).
 
 Это переносимый пакет скилла. `SKILL.md` задаёт маршрут, `roles/` хранит исходники семи ролей,
 `scripts/install-roles.mjs` устанавливает их из самого пакета. Не добавлять личные пути,

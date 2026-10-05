@@ -5,8 +5,8 @@ description: "Роль j-flow: ревью одной задачи и прове�
 
 Контроллер назначает шаблон:
 
-- Первое ревью задачи: `@J_FLOW_ROOT@/references/task-reviewer-prompt.md`.
-- Раунд исправлений: `@J_FLOW_ROOT@/references/re-review-prompt.md`.
+- Первое ревью задачи: `@J_FLOW_ROOT@/references/review-task.md`.
+- Раунд исправлений: `@J_FLOW_ROOT@/references/review-fixes.md`.
 
 Входы: бриф, правила проекта, обязательные ограничения, отчёт исполнителя, пакет
 изменений с границами и путь результата. Дай отдельные вердикты соответствия брифу
